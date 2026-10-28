@@ -1,215 +1,187 @@
 import { useEffect, useState } from "react";
 
+const API = "http://localhost:5001/api/courses";
+const fields = [
+  ["courseId", "Course ID"],
+  ["courseName", "Course Name"],
+  ["department", "Department"],
+  ["instructor", "Instructor"],
+  ["duration", "Duration"],
+  ["fee", "Fee (₹)", "number"],
+];
+const emptyForm = {
+  courseId: "", courseName: "", department: "",
+  instructor: "", duration: "", fee: "",
+};
+
 function App() {
   const [courses, setCourses] = useState([]);
-  const [form, setForm] = useState({
-    courseId: "",
-    courseName: "",
-    department: "",
-    instructor: "",
-    duration: "",
-    fee: "",
-  });
-
+  const [form, setForm] = useState(emptyForm);
+  const [editing, setEditing] = useState(null);
+  const [search, setSearch] = useState("");
   const [message, setMessage] = useState("");
 
-  // Load courses from the backend
-  const fetchCourses = async () => {
+  async function load(q = "") {
     try {
-      const response = await fetch("http://localhost:5001/api/courses");
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Could not load courses.");
-      }
-
+      const url = q.trim()
+        ? `${API}/search?q=${encodeURIComponent(q.trim())}`
+        : API;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
       setCourses(data);
-    } catch (error) {
-      setMessage("Could not connect to the backend. Check that it is running.");
-      console.error(error);
+    } catch (err) {
+      setMessage(err.message || "Unable to connect to server.");
     }
-  };
+  }
 
-  useEffect(() => {
-    fetchCourses();
-  }, []);
+  useEffect(() => { load(); }, []);
 
-  // Update form fields
-  const handleChange = (event) => {
-    setForm({
-      ...form,
-      [event.target.name]: event.target.value,
-    });
-  };
-
-  // Save a course to MongoDB
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setMessage("");
-
+  async function submit(e) {
+    e.preventDefault();
     try {
-      const response = await fetch("http://localhost:5001/api/courses", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...form,
-          fee: Number(form.fee),
-        }),
+      const res = await fetch(editing ? `${API}/${editing}` : API, {
+        method: editing ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, fee: Number(form.fee) }),
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to add course.");
-      }
-
-      setMessage("Course added successfully!");
-      setForm({
-        courseId: "",
-        courseName: "",
-        department: "",
-        instructor: "",
-        duration: "",
-        fee: "",
-      });
-
-      await fetchCourses();
-    } catch (error) {
-      setMessage(error.message);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      setMessage(editing ? "Course updated!" : "Course added!");
+      setForm(emptyForm);
+      setEditing(null);
+      await load();
+    } catch (err) {
+      setMessage(err.message || "Unable to save course.");
     }
-  };
+  }
 
-  // Delete a course from MongoDB
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this course?")) {
-      return;
-    }
+  function edit(course) {
+    setForm(Object.fromEntries(
+      fields.map(([key]) => [key, String(course[key])])
+    ));
+    setEditing(course._id);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
+  async function remove(id) {
+    if (!window.confirm("Delete this course?")) return;
     try {
-      const response = await fetch(
-        `http://localhost:5001/api/courses/${id}`,
-        { method: "DELETE" }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to delete course.");
+      const res = await fetch(`${API}/${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      setMessage("Course deleted!");
+      if (editing === id) {
+        setEditing(null);
+        setForm(emptyForm);
       }
-
-      setMessage("Course deleted successfully!");
-      await fetchCourses();
-    } catch (error) {
-      setMessage(error.message);
+      await load(search);
+    } catch (err) {
+      setMessage(err.message || "Unable to delete course.");
     }
-  };
+  }
 
   return (
-    <div className="container py-5">
-      <h1 className="text-center mb-2">Course Registration System</h1>
-      <p className="text-center text-muted mb-4">
-        Manage courses using React, Node.js, Express, and MongoDB
-      </p>
+    <div className="container py-4">
+      <header className="app-header rounded-3 p-4 mb-4 text-white">
+        <h1>Course Registration System</h1>
+        <p className="mb-0">Manage your courses in one place</p>
+      </header>
 
       {message && (
-        <div className="alert alert-info" role="alert">
+        <div className="alert alert-info">
           {message}
+          <button className="btn-close float-end"
+            onClick={() => setMessage("")} />
         </div>
       )}
 
-      <div className="card shadow-sm mb-4">
-        <div className="card-header bg-primary text-white">
-          <h4 className="mb-0">Add a New Course</h4>
-        </div>
-
-        <div className="card-body">
-          <form onSubmit={handleSubmit}>
-            <div className="row">
-              {[
-                ["courseId", "Course ID", "text"],
-                ["courseName", "Course Name", "text"],
-                ["department", "Department", "text"],
-                ["instructor", "Instructor", "text"],
-                ["duration", "Duration", "text"],
-                ["fee", "Fee (₹)", "number"],
-              ].map(([name, label, type]) => (
-                <div className="col-md-6 mb-3" key={name}>
-                  <label htmlFor={name} className="form-label">
-                    {label}
-                  </label>
-
-                  <input
-                    id={name}
-                    name={name}
-                    type={type}
-                    className="form-control"
-                    value={form[name]}
-                    onChange={handleChange}
-                    required
-                    min={type === "number" ? "0" : undefined}
-                    step={type === "number" ? "0.01" : undefined}
-                  />
-                </div>
-              ))}
-            </div>
-
-            <button type="submit" className="btn btn-primary">
-              Add Course
+      <section className="card p-4 mb-4">
+        <h3>{editing ? "Update Course" : "Add New Course"}</h3>
+        <form onSubmit={submit}>
+          <div className="row g-3">
+            {fields.map(([key, label, type]) => (
+              <div className="col-md-6" key={key}>
+                <label className="form-label">{label}</label>
+                <input
+                  className="form-control"
+                  type={type || "text"}
+                  min={type === "number" ? "0" : undefined}
+                  required
+                  placeholder={`Enter ${label}`}
+                  value={form[key]}
+                  onChange={e => setForm({
+                    ...form, [key]: e.target.value
+                  })}
+                />
+              </div>
+            ))}
+          </div>
+          <button className="btn btn-primary mt-3">
+            {editing ? "Update Course" : "Add Course"}
+          </button>
+          {editing && (
+            <button type="button" className="btn btn-secondary mt-3 ms-2"
+              onClick={() => { setEditing(null); setForm(emptyForm); }}>
+              Cancel
             </button>
-          </form>
-        </div>
-      </div>
-
-      <div className="card shadow-sm">
-        <div className="card-header bg-dark text-white">
-          <h4 className="mb-0">Registered Courses</h4>
-        </div>
-
-        <div className="card-body">
-          {courses.length === 0 ? (
-            <p className="text-muted mb-0">No courses found.</p>
-          ) : (
-            <div className="table-responsive">
-              <table className="table table-striped table-bordered align-middle">
-                <thead className="table-light">
-                  <tr>
-                    <th>Course ID</th>
-                    <th>Course Name</th>
-                    <th>Department</th>
-                    <th>Instructor</th>
-                    <th>Duration</th>
-                    <th>Fee (₹)</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {courses.map((course) => (
-                    <tr key={course._id}>
-                      <td>{course.courseId}</td>
-                      <td>{course.courseName}</td>
-                      <td>{course.department}</td>
-                      <td>{course.instructor}</td>
-                      <td>{course.duration}</td>
-                      <td>{course.fee}</td>
-                      <td>
-                        <button
-                          className="btn btn-danger btn-sm"
-                          onClick={() => handleDelete(course._id)}
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
           )}
+        </form>
+      </section>
+
+      <section className="card p-4">
+        <h3>Registered Courses ({courses.length})</h3>
+
+        <form className="d-flex gap-2 my-3" onSubmit={e => {
+          e.preventDefault();
+          load(search);
+        }}>
+          <input className="form-control" placeholder="Search by ID or name"
+            value={search} onChange={e => setSearch(e.target.value)} />
+          <button className="btn btn-primary">Search</button>
+          <button type="button" className="btn btn-outline-secondary"
+            onClick={() => { setSearch(""); load(); }}>
+            All
+          </button>
+        </form>
+
+        <div className="table-responsive">
+          <table className="table table-hover align-middle">
+            <thead><tr>
+              {fields.map(([, label]) => <th key={label}>{label}</th>)}
+              <th>Actions</th>
+            </tr></thead>
+            <tbody>
+              {courses.map(course => (
+                <tr key={course._id}>
+                  {fields.map(([key]) => (
+                    <td key={key}>
+                      {key === "fee"
+                        ? `₹${Number(course[key]).toLocaleString("en-IN")}`
+                        : course[key]}
+                    </td>
+                  ))}
+                  <td className="text-nowrap">
+                    <button className="btn btn-sm btn-outline-primary me-2"
+                      onClick={() => edit(course)}>Edit</button>
+                    <button className="btn btn-sm btn-outline-danger"
+                      onClick={() => remove(course._id)}>Delete</button>
+                  </td>
+                </tr>
+              ))}
+              {!courses.length && (
+                <tr><td colSpan="7" className="text-center py-4">
+                  No courses found.
+                </td></tr>
+              )}
+            </tbody>
+          </table>
         </div>
-      </div>
+      </section>
+
+      <footer className="text-center text-secondary small mt-4">
+        Course Registration System · React & MongoDB
+      </footer>
     </div>
   );
 }
