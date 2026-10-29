@@ -1,38 +1,38 @@
-# 🎓 Course Registration System
+#  Course Registration System
 
 A simple and user-friendly web application to manage course information efficiently. This project allows users to add, view, search, update, and delete course records through an interactive interface.
 
 ---
 
-## ✨ Features
+##  Features
 
-- ➕ **Add Courses** — Register new courses with complete details.
-- 📋 **View Courses** — Display all registered courses in a table.
-- 🔍 **Search Courses** — Find courses by course ID or course name.
-- ✏️ **Update Courses** — Edit existing course information.
-- 🗑️ **Delete Courses** — Remove unwanted course records.
-- 💾 **Database Integration** — Store course details in MongoDB.
-- 🎨 **Responsive UI** — Clean interface built with Bootstrap and CSS.
-- 👥 **Team Section** — Displays project team members.
+-  **Add Courses** — Register new courses with complete details.
+-  **View Courses** — Display all registered courses in a table.
+-  **Search Courses** — Find courses by course ID or course name.
+-  **Update Courses** — Edit existing course information.
+-  **Delete Courses** — Remove unwanted course records.
+-  **Database Integration** — Store course details in MongoDB.
+-  **Responsive UI** — Clean interface built with Bootstrap and CSS.
+-  **Team Section** — Displays project team members.
 
 ---
 
-## 🛠️ Technologies Used
+##  Technologies Used
 
 | Technology | Purpose |
 |---|---|
-| ⚛️ React | Builds the frontend user interface |
-| 🟢 Node.js | Runs the backend JavaScript environment |
-| 🚀 Express.js | Handles backend routes and API requests |
-| 🍃 MongoDB | Stores course information |
-| 🔗 Mongoose | Connects the backend with MongoDB |
-| 🎨 Bootstrap | Provides responsive UI components |
-| 💅 CSS | Customizes the website's appearance |
-| 🧰 VS Code | Development environment |
+|  React | Builds the frontend user interface |
+|  Node.js | Runs the backend JavaScript environment |
+|  Express.js | Handles backend routes and API requests |
+|  MongoDB | Stores course information |
+|  Mongoose | Connects the backend with MongoDB |
+|  Bootstrap | Provides responsive UI components |
+|  CSS | Customizes the website's appearance |
+|  VS Code | Development environment |
 
 ---
 
-## 📂 Project Structure
+##  Project Structure
 
 ```text
 CourseRegistrationSystem/
@@ -57,7 +57,7 @@ CourseRegistrationSystem/
 
 ---
 
-## 🗃️ Database Structure
+##  Database Structure
 
 **Database:** `courseRegistrationDB`  
 **Collection:** `courses`
@@ -75,7 +75,7 @@ Each course contains the following information:
 
 ---
 
-## ⚙️ Installation and Setup
+##  Installation and Setup
 
 ### Prerequisites
 
@@ -141,7 +141,7 @@ Open the local URL displayed in your terminal, usually:
 
 `http://localhost:5173`
 
-🎉 Your Course Registration System is ready to use!
+ Your Course Registration System is ready to use!
 
 ---
 
@@ -168,25 +168,25 @@ This project implements the four fundamental CRUD operations:
 
 ---
 
-## 👩‍💻 Team Members
+##  Team Members
 
 - **Athira Arun**
 - **Pooja Shree**
 
 ---
 
-## 🎯 Project Objective
+##  Project Objective
 
 The objective of this project is to simplify course management by providing an organized platform for maintaining course records. It demonstrates the integration of frontend development, backend APIs, and database management in a full-stack web application.
 
 ---
 
-## 🚀 Future Improvements
+##  Future Improvements
 
-- 🔐 User authentication and login
-- 📊 Course statistics and dashboard
-- 📥 Export course records to CSV or PDF
-- 🎓 Student enrollment management
+-  User authentication and login
+-  Course statistics and dashboard
+-  Export course records to CSV or PDF
+-  Student enrollment management
 
 ---
 
